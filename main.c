@@ -11,7 +11,7 @@ Author: madbookhub@github
 
 Created: Aug,18,2024
  
-Recent: Oct,5,2024
+Recent: Oct,12,2024
 ---------------------------------------- */
 #include <stdlib.h>
 #include "common.h"
@@ -36,7 +36,9 @@ void OnTerminalCloses()
 NomoreAsk();
 }
 
-int main()
+
+int main(int argc, char* argv[])
 {
+InitProxy(argc, argv);
 return OpenTerminal( &OnSubmitfromTerminal, &OnTerminalCloses );
 }

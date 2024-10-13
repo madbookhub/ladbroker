@@ -6,7 +6,7 @@
 //
 // Created: Aug,18,2024
 // 
-// Recent: Oct,6,2024
+// Recent: Oct,12,2024
 // ----------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +24,16 @@
 #define BUF_SIZE 8192
 #define POST_SIZE 1000 // memory block for the HTTP POST data sent to LLM
 
+#define DEF_SERVERADDR "127.0.0.1"
+#define DEF_SERVERPORT "8080"
+#define DEF_SERVICETIMEOUT 100
+
+#define SERVER_PATH  "/v1/chat/completions"
+#define SERVICE_HEADER "Content-Type: application/json;charset=utf-8\r\nConnection: close"
+
+#define PROMPTFILE "prompt.txt"
+#define PATTERN  "```(perl)?([^`]+)```.+(```.+```)*"
+
 // Following Error Message ID MUST be greater than zero to avoid chaos.
 #define ERROR_GETADDRINFO 1
 #define ERROR_CONNECTION 2
@@ -35,6 +45,9 @@
 #define ERROR_PROMPT 10
 
 char* PromptText = NULL;
+char* ServerAddr = NULL;
+char* ServerPort = NULL;
+int ServiceTimeout = -1;
 
 int LoadPrompt()
 {
@@ -70,7 +83,7 @@ Hints.ai_socktype = SOCK_STREAM;
 
 // trt to make connection to remote server
 
-BeRead = getaddrinfo(SERVER_ADDR, SERVER_PORT, &Hints, &ServerInfo);
+BeRead = getaddrinfo(ServerAddr, ServerPort, &Hints, &ServerInfo);
 if (BeRead != 0) return ERROR_GETADDRINFO;
 
 for (p = ServerInfo; p != NULL; p = p->ai_next)
@@ -85,7 +98,7 @@ for (p = ServerInfo; p != NULL; p = p->ai_next)
     // problem (no response) of LLM server. It is recommended that setting this
     // value as required.
     struct timeval Timeout;
-    Timeout.tv_sec = SERVICE_TIMEOUT;
+    Timeout.tv_sec = ServiceTimeout;
     Timeout.tv_usec = 0;
     setsockopt(*Socket,SOL_SOCKET,SO_RCVTIMEO,(char*)&Timeout,sizeof Timeout);
 
@@ -113,7 +126,7 @@ snprintf(PostText, \
 snprintf(Buf, \
         BufSize, \
         "POST %s HTTP/1.1\r\nHost:%s:%s\r\nContent-Length:%zu\r\n%s\r\n\r\n%s",\
-        SERVER_PATH, SERVER_ADDR, SERVER_PORT, strlen(PostText),SERVICE_HEADER,\
+        SERVER_PATH, ServerAddr, ServerPort, strlen(PostText),SERVICE_HEADER,\
         PostText \
         );
 
@@ -213,3 +226,25 @@ return Result; // the memory block ("Buf") is not concerned here
 }
 
 void NomoreAsk(){ Freealloc(PromptText); }
+
+void InitProxy(const int argc, char* argv[])
+{
+int Option;
+
+opterr = 0;
+
+while ( (Option = getopt(argc, argv, "h:p:t:")) != -1 )
+    {
+    switch (Option)
+        {
+        case 'h': ServerAddr = optarg; break;
+        case 'p': ServerPort = optarg; break;
+        case 't': ServiceTimeout = atoi(optarg); break;
+        default : break;
+        }
+    }
+
+if (ServerAddr == NULL) ServerAddr = DEF_SERVERADDR ;
+if (ServerPort == NULL) ServerPort = DEF_SERVERPORT ;
+if (ServiceTimeout < 0) ServiceTimeout = DEF_SERVICETIMEOUT ;
+}

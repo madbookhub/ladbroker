@@ -6,7 +6,7 @@
 //
 // Created: Aug,18,2024
 // 
-// Recent: Oct,6,2024
+// Recent: Oct,12,2024
 // ----------------------------------------
 
 // #define _POSIX_C_SOURCE 200809L
@@ -43,6 +43,7 @@
 #define ERROR_SHELL 13
 
 #define DEF_SHELL "/bin/bash"
+#define STARTSPEECH "It is activated.Type \"exit\" to quit.\n"
 
 void Run(int Master, CALLBACKFUNC Callback)
 {
