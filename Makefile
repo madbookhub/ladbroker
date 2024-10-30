@@ -14,7 +14,7 @@ CC = gcc
 CFLAGS = -g -w # -Wall
 
 # Source files
-SOURCES = common.c term.c proxy.c executant.c main.c
+SOURCES = common/common.c terminal/terminal.c broker/broker.c executant/executant.c main.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)
